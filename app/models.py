@@ -13,12 +13,12 @@ class Hero(db.Model):
     created_at = db.Column(db.DateTime(), server_default=db.func.now())
     updated_at = db.Column(db.DateTime(), onupdate=db.func.now())
 
-    powers = db.relationship('Hero_Powers')
+    powers = db.relationship('Hero_Power' , back_populates="hero")
 
     def __repr__(self):
         return f"Hero(id={self.id}, name={self.name}, super_name={self.super_name})"
 
-class Powers(db.Model):
+class Power(db.Model):
     __tablename__ = 'powers'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -27,8 +27,10 @@ class Powers(db.Model):
     created_at = db.Column(db.DateTime(), server_default=db.func.now())
     updated_at = db.Column(db.DateTime(), onupdate=db.func.now())
 
+    heroes = db.relationship('Hero_Power' , back_populates="power")
+
     def __repr__(self):
-        return f"Powers(id={self.id}, name={self.name}, description={self.description})"
+        return f"Power(id={self.id}, name={self.name}, description={self.description})"
     
 
 @validates('description')
@@ -37,7 +39,7 @@ def validate_description(sef,key,value):
         raise ValueError("Description must be atleast 20 characters in length")
     return value
 
-class Hero_Powers(db.Model):
+class Hero_Power(db.Model):
     __tablename__ = 'hero_powers'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -46,10 +48,12 @@ class Hero_Powers(db.Model):
     updated_at = db.Column(db.DateTime(), onupdate=db.func.now())
     heroes_id = db.Column(db.Integer, db.ForeignKey('heroes.id'))
     powers_id = db.Column(db.Integer, db.ForeignKey('powers.id'))
-
+    
+    hero = db.relationship('Hero' , back_populates="powers")
+    power = db.relationship('Power' , back_populates="heroes")
 
     def __repr__(self):
-        return f"Hero_Powers(id={self.id}, strength={self.strength}, hero_id={self.hero_id}, power_id={self.power_id})"
+        return f"Hero_Power(id={self.id}, strength={self.strength}, hero_id={self.hero_id}, power_id={self.power_id})"
 
 @validates('strength')
 def validate_description(sef,key,value):

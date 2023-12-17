@@ -5,7 +5,7 @@ from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
 from flask_cors import CORS
 
-from models import db, Hero, Powers, Hero_Powers
+from models import db, Hero, Power, Hero_Power
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
@@ -18,6 +18,26 @@ db.init_app(app)
 mash = Marshmallow(app)
 api = Api(app)
 
+class HeroSchema(mash.SQLAlchemySchema):
+
+    class Meta:
+        model = Hero
+
+    id = mash.auto_field()
+    name = mash.auto_field()
+    super_name = mash.auto_field()
+    powers = mash.auto_field()
+
+    url = mash.Hyperlinks(
+        {
+            "self":mash.URLFor(
+                "heroesbyid",
+                values=dict(id="<id>"))
+        }
+    )
+
+hero_schema = HeroSchema()
+
 class HeroesSchema(mash.SQLAlchemySchema):
 
     class Meta:
@@ -29,15 +49,45 @@ class HeroesSchema(mash.SQLAlchemySchema):
 
     url = mash.Hyperlinks(
         {
-            "self":mash.URLFor(
-                "heroesbyid",
-                values=dict(id="<id>")),
             "collection":mash.URLFor("heroes")
         }
     )
-
-hero_schema = HeroesSchema()
 heroes_schema = HeroesSchema(many=True)
+
+class PowerSchema(mash.SQLAlchemySchema):
+
+    class Meta:
+        model = Power
+
+    id = mash.auto_field()
+    name = mash.auto_field()
+    description = mash.auto_field()
+
+    url = mash.Hyperlinks(
+        {
+            "self":mash.URLFor(
+                "powersbyid",
+                values=dict(id="<id>"))
+        }
+    )
+
+power_schema = PowerSchema()
+
+class PowersSchema(mash.SQLAlchemySchema):
+
+    class Meta:
+        model = Power
+
+    id = mash.auto_field()
+    name = mash.auto_field()
+    description = mash.auto_field()
+
+    url = mash.Hyperlinks(
+        {
+            "collection":mash.URLFor("powers")
+        }
+    )
+powers_schema = PowersSchema(many=True)
 
 class Index(Resource):
 
@@ -72,13 +122,49 @@ class HeroesbyId(Resource):
 
         hero = Hero.query.filter_by(id=id).first()
 
+        if hero:
+
+            response = make_response(
+                hero_schema.dump(hero),
+                200
+            )
+            return response
+        else:
+            return make_response({"error": "Hero not found"}, 404)
+        
+
+api.add_resource(HeroesbyId, '/heroes/<int:id>')
+
+class Powers(Resource):
+
+    def get(self):
+
+        power= Power.query.all()
         response = make_response(
-            hero_schema.dump(hero),
+            powers_schema.dump(power),
             200
         )
         return response
 
-api.add_resource(HeroesbyId, '/heroes/<int:id>')
+api.add_resource(Powers,'/powers')
+
+class PowersById(Resource):
+
+    def get(self,id):
+
+        power = Power.query.filter_by(id=id).first()
+
+        if power:
+            response = make_response(
+                power_schema.dump(power),
+                200
+            )
+            return response
+        else:
+            return make_response({"error": "Power not found"}, 404)
+        
+
+api.add_resource(PowersById, '/powers/<int:id>')
 
 
 if __name__ == '__main__':
