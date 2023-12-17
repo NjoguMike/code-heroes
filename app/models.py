@@ -15,6 +15,9 @@ class Hero(db.Model):
 
     powers = db.relationship('Hero_Powers', backref='hero_powers.powers')
 
+    def __repr__(self):
+        return f"Hero(id={self.id}, name={self.name}, super_name={self.super_name})"
+
 class Powers(db.Model):
     __tablename__ = 'powers'
 
@@ -23,6 +26,9 @@ class Powers(db.Model):
     description = db.Column(db.String, nullable=False)
     created_at = db.Column(DateTime(), server_default=func.now())
     updated_at = db.Column(DateTime(), server_default=func.now())
+
+    def __repr__(self):
+        return f"Powers(id={self.id}, name={self.name}, description={self.description})"
     
 
 @validates('description')
@@ -43,6 +49,9 @@ class Hero_Powers(db.Model):
 
     powers = db.relationship('Powers')
     heroes = db.relationship('Hero')
+
+    def __repr__(self):
+        return f"Hero_Powers(id={self.id}, strength={self.strength}, hero_id={self.hero_id}, power_id={self.power_id})"
 
 @validates('strength')
 def validate_description(sef,key,value):
