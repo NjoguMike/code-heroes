@@ -1,9 +1,12 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func
+from sqlalchemy import MetaData
 from sqlalchemy.orm import validates
 
+metadata = MetaData(naming_convention={
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+})
 
-db = SQLAlchemy()
+db = SQLAlchemy(metadata=metadata)
 
 class Hero(db.Model):
     __tablename__ = 'heroes'
@@ -12,9 +15,9 @@ class Hero(db.Model):
     name = db.Column(db.String, nullable=False)
     super_name = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime(), server_default=db.func.now())
-    updated_at = db.Column(db.DateTime(), server_default=db.func.now())
+    updated_at = db.Column(db.DateTime(), onupdate=db.func.now())
 
-    powers = db.relationship('Hero_Powers', backref='hero_powers.powers')
+    powers = db.relationship('Hero_Powers')
 
     def __repr__(self):
         return f"Hero(id={self.id}, name={self.name}, super_name={self.super_name})"
@@ -26,7 +29,7 @@ class Powers(db.Model):
     name = db.Column(db.String, nullable=False)
     description = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime(), server_default=db.func.now())
-    updated_at = db.Column(db.DateTime(), server_default=db.func.now())
+    updated_at = db.Column(db.DateTime(), onupdate=db.func.now())
 
     def __repr__(self):
         return f"Powers(id={self.id}, name={self.name}, description={self.description})"
@@ -43,10 +46,10 @@ class Hero_Powers(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     strength = db.Column(db.String, nullable=False)
-    hero_id = db.Column(db.Integer, db.Foreignkey("heroes.id"))
-    power_id = db.Column(db.Integer, db.Foreignkey("powers.id"))
     created_at = db.Column(db.DateTime(), server_default=db.func.now())
-    updated_at = db.Column(db.DateTime(), server_default=db.func.now())
+    updated_at = db.Column(db.DateTime(), onupdate=db.func.now())
+    heroes_id = db.Column(db.Integer, db.ForeignKey('heroes.id'))
+    powers_id = db.Column(db.Integer, db.ForeignKey('powers.id'))
 
     powers = db.relationship('Powers')
     heroes = db.relationship('Hero')

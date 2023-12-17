@@ -12,66 +12,65 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db/app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 migrate = Migrate(app, db)
-db.init_app(app)
-
-CORS(app)
-
-mash = Marshmallow(app)
+# CORS(app)
 
 
-class HeroesSchema(mash.SQLAlchemySchema):
-
-    class meta:
-        model = Hero
-
-    id = mash.auto_field()
-    name = mash.auto_field()
-    super_name = mash.auto_field()
-
-    url = mash.HyperlinkRelated(
-        {
-            "self": mash.URLFor(
-                "heroesbyid", values=dict(id="<id>")),
-            "collection":mash.URLFor("heores")
-        }
-    )
-
-hero_schema = HeroesSchema()
-heroes_schema = HeroesSchema(many=True)
+# mash = Marshmallow(app)
 
 
-api = Api(app)
+# class HeroesSchema(mash.SQLAlchemySchema):
 
-@app.route('/')
-def home():
-    return "Welcome to the Home of SuperHeroes"
+#     class meta:
+#         model = Hero
 
-class Heroes(Resource):
+#     id = mash.auto_field()
+#     name = mash.auto_field()
+#     super_name = mash.auto_field()
 
-    def get(self):
+#     url = mash.HyperlinkRelated(
+#         {
+#             "self": mash.URLFor(
+#                 "heroesbyid", values=dict(id="<id>")),
+#             "collection":mash.URLFor("heores")
+#         }
+#     )
 
-        heroes = Hero.query.all()
-        response = make_response(
-            heroes_schema.dump(heroes) ,
-            200
-        )
-        return response
+# hero_schema = HeroesSchema()
+# heroes_schema = HeroesSchema(many=True)
 
-api.add_resource('/heroes', Heroes)
 
-class HeroesbyId(Resource):
+# api = Api(app)
 
-    def get(self,id):
+# @app.route('/')
+# def home():
+#     return "Welcome to the Home of SuperHeroes"
 
-        hero = Hero.query.filter_by(id=id).first()
+# class Heroes(Resource):
 
-        response = make_response(
-            hero_schema.dump(hero) ,
-            200
-        )
-        return response
+#     def get(self):
 
-api.add_resource('/heroes/<int:id>', Heroes)
+#         heroes = Hero.query.all()
+#         response = make_response(
+#             heroes_schema.dump(heroes) ,
+#             200
+#         )
+#         return response
+
+# api.add_resource('/heroes', Heroes)
+
+# class HeroesbyId(Resource):
+
+#     def get(self,id):
+
+#         hero = Hero.query.filter_by(id=id).first()
+
+#         response = make_response(
+#             hero_schema.dump(hero) ,
+#             200
+#         )
+#         return response
+
+# api.add_resource('/heroes/<int:id>', Heroes)
 
 
 if __name__ == '__main__':
