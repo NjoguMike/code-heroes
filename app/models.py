@@ -2,11 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from sqlalchemy.orm import validates
 
-metadata = MetaData(naming_convention={
-    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-})
-
-db = SQLAlchemy(metadata=metadata)
+db = SQLAlchemy()
 
 class Hero(db.Model):
     __tablename__ = 'heroes'
@@ -51,8 +47,6 @@ class Hero_Powers(db.Model):
     heroes_id = db.Column(db.Integer, db.ForeignKey('heroes.id'))
     powers_id = db.Column(db.Integer, db.ForeignKey('powers.id'))
 
-    powers = db.relationship('Powers')
-    heroes = db.relationship('Hero')
 
     def __repr__(self):
         return f"Hero_Powers(id={self.id}, strength={self.strength}, hero_id={self.hero_id}, power_id={self.power_id})"
