@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from flask import Flask, make_response
+from flask import Flask, make_response , request
 from flask_restful import Resource, Api
 from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
@@ -89,6 +89,23 @@ class PowersSchema(mash.SQLAlchemySchema):
     )
 powers_schema = PowersSchema(many=True)
 
+class Hero_PowerSchema(mash.SQLAlchemySchema):
+
+    class Meta:
+        model = Hero_Power
+
+    id = mash.auto_field()
+    strength = mash.auto_field()
+    powers_id = mash.auto_field()
+    heroes_id = mash.auto_field()
+
+    url = mash.Hyperlinks(
+        {
+            "collection":mash.URLFor("hero_powers")
+        }
+    )
+hero_powers_schema = Hero_PowerSchema(many=True)
+
 class Index(Resource):
 
     def get(self):
@@ -163,9 +180,66 @@ class PowersById(Resource):
         else:
             return make_response({"error": "Power not found"}, 404)
         
+    def patch(self, id):
+        
+        power = Power.query.filter_by(id=id).first()
+
+        if power:
+
+            try:
+                for attr in request.get_json():
+                    setattr(power, attr, request.get_json()[attr])
+                    db.session.commit()
+
+                    response = make_response(
+                        power_schema.dump(power),
+                        201
+                    )
+                    return response
+
+            except ValueError:
+                response = make_response(
+                    power_schema.dump({"errors": ["validation errors"]}),
+                    401
+                )
+                return response
+            
+        else:
+            return make_response({"error": "Power not found"}, 404)
+
 
 api.add_resource(PowersById, '/powers/<int:id>')
 
+class Hero_Powers(Resource):
+
+    def post(self):
+
+        data = request.get_json()
+
+        try:
+
+            new_heroItem = Hero_Power(
+                strength = data["strength"],
+                powers_id = data["powers_id"],
+                heroes_id = data["heroes_id"],
+            )
+            db.session.add(new_heroItem)
+            db.session.commit()
+
+            response = make_response(
+                powers_schema.dump(Hero.query.filter_by(id=new_heroItem.id).first()),
+                201
+            )
+            return response
+
+        except ValueError:
+            response = make_response(
+                power_schema.dump({"errors": ["validation errors"]}),
+                401
+            )
+            return response
+
+api.add_resource(Hero_Powers,'/hero_powers')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

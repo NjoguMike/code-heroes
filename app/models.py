@@ -56,7 +56,7 @@ class Hero_Power(db.Model):
         return f"Hero_Power(id={self.id}, strength={self.strength}, hero_id={self.hero_id}, power_id={self.power_id})"
 
 @validates('strength')
-def validate_description(sef,key,value):
+def validate_strength(sef,key,value):
     if value not in ['strong','weak','average']:
         raise ValueError("Please insert a valid strength value")
     return value
